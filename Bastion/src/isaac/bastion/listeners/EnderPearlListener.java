@@ -36,6 +36,7 @@ public class EnderPearlListener implements Listener {
 		if(event.isCancelled())
 			return;
 		if(event.getEntity() instanceof EnderPearl) {
+			manager.handleEnderPearlLaunched(event);
 			EnderPearl pearl=(EnderPearl) event.getEntity();
 			pearlMang.handlePearlLaunched(pearl);
 		}

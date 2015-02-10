@@ -23,12 +23,14 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.entity.EnderPearl;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDispenseEvent;
 import org.bukkit.event.block.BlockFromToEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
@@ -43,7 +45,7 @@ import vg.civcraft.mc.citadel.reinforcement.PlayerReinforcement;
 public class BastionBlockManager
 {
 	public BastionBlockSet set;
-	private Map<String, Long> playerLastEroded = new HashMap<String, Long>();
+	private Map<UUID, Long> playerLastEroded = new HashMap<UUID, Long>();
 	private static Random generator = new Random();
 
 
@@ -61,7 +63,7 @@ public class BastionBlockManager
 	}
 
 	
-	public void erodeFromPlace(Block orrigin, Set<Block> result, String player, Set<BastionBlock> blocking){
+	public void erodeFromPlace(Block orrigin, Set<Block> result, Player player, Set<BastionBlock> blocking){
 		if(onCooldown(player)) return;
 		
 		if(Bastion.getConfigManager().getBastionBlocksToErode() < 0){
@@ -79,7 +81,7 @@ public class BastionBlockManager
 		}
 	}
 	
-	public void erodeFromTeleoprt(Location loc, String player, Set<BastionBlock> blocking){
+	public void erodeFromTeleoprt(Location loc, Player player, Set<BastionBlock> blocking){
 		if(onCooldown(player)) return;
 		
 		List<BastionBlock> ordered = new LinkedList<BastionBlock>(blocking);
@@ -88,15 +90,15 @@ public class BastionBlockManager
 		toErode.erode(toErode.erosionFromPearl());
 	}
 	
-	public boolean onCooldown(String player){
+	public boolean onCooldown(Player player){
 		Long last_placed = playerLastEroded.get(player);
 		if (last_placed == null){
-			playerLastEroded.put(player, System.currentTimeMillis());
+			playerLastEroded.put(player.getUniqueId(), System.currentTimeMillis());
 			return false;
 		}
 		
 		if ((System.currentTimeMillis() - playerLastEroded.get(player)) < BastionBlock.MIN_BREAK_TIME) return true;
-		else playerLastEroded.put(player, System.currentTimeMillis());
+		else playerLastEroded.put(player.getUniqueId(), System.currentTimeMillis());
 		
 		return false;
 	}
@@ -266,7 +268,7 @@ public class BastionBlockManager
 		Set<BastionBlock> blocking = shouldStopBlock(null, blocks,event.getPlayer().getUniqueId());
 		
 		if(blocking.size() != 0){
-			erodeFromPlace(null, blocks,event.getPlayer().getName(),blocking);
+			erodeFromPlace(null, blocks, event.getPlayer(), blocking);
 			
 			event.setCancelled(true);
 			event.getPlayer().sendMessage(ChatColor.RED + "Bastion removed block");
@@ -340,16 +342,17 @@ public class BastionBlockManager
 		if (bastion != null)
 			bastion.close();
 	}
+
 	public void handleEnderPearlLanded(PlayerTeleportEvent event) {
 		if (!Bastion.getConfigManager().getEnderPearlsBlocked()) return; //don't block if the feature isn't enabled.
 		if (event.getPlayer().hasPermission("Bastion.bypass")) return; //I'm not totally sure about the implications of this combined with humbug. It might cause some exceptions. Bukkit will catch.
 		if (event.getCause() != TeleportCause.ENDER_PEARL) return; // Only handle enderpearl cases
-		
+
 		Set<BastionBlock> blocking = this.getBlockingBastions(event.getTo(), event.getPlayer());
-		
+
 		if(Bastion.getConfigManager().getEnderPearlRequireMaturity()){
 			Iterator<BastionBlock> i = blocking.iterator();
-		
+
 			while (i.hasNext()){
 				BastionBlock bastion = i.next();
 				if (!bastion.isMature()){
@@ -357,17 +360,57 @@ public class BastionBlockManager
 				}
 			};
 		}
-		
+
 		if (blocking.size() > 0){
-			this.erodeFromTeleoprt(event.getTo(), event.getPlayer().getName(), blocking);
+			this.erodeFromTeleoprt(event.getTo(), event.getPlayer(), blocking);
 			event.getPlayer().sendMessage(ChatColor.RED+"Ender pearl blocked by Bastion Block");
 			event.getPlayer().getInventory().addItem(new ItemStack(Material.ENDER_PEARL));
-			
+
 			event.setCancelled(true);
 			return;
 		}
-		
+
 		blocking = this.getBlockingBastions(event.getFrom(), event.getPlayer());
+
+		if(Bastion.getConfigManager().getEnderPearlRequireMaturity()){
+			Iterator<BastionBlock> i = blocking.iterator();
+
+			while (i.hasNext()){
+				BastionBlock bastion = i.next();
+				if (!bastion.isMature()){
+					i.remove();
+				}
+			};
+		}
+
+
+		if (blocking.size() > 0){
+			this.erodeFromTeleoprt(event.getTo(), event.getPlayer(), blocking);
+			event.getPlayer().sendMessage(ChatColor.RED+"Ender pearl blocked by Bastion Block");
+			event.getPlayer().getInventory().addItem(new ItemStack(Material.ENDER_PEARL));
+
+			event.setCancelled(true);
+			return;
+		}
+	}
+
+
+	public void handleEnderPearlLaunched(ProjectileLaunchEvent event) {
+		if (!Bastion.getConfigManager().getEnderPearlsBlocked()) return; //don't block if the feature isn't enabled.
+		if (!(event.getEntity() instanceof EnderPearl)) return; //this should be prevent by the listener but better to check twice
+		EnderPearl pearl = (EnderPearl) event.getEntity();
+
+		Player thrower;
+
+		if(pearl.getShooter() instanceof Player) { //not sure why getShooter is showing up
+			thrower = (Player) pearl.getShooter();
+		} else {
+			event.setCancelled(true);
+			return;
+		}
+
+		if (thrower.hasPermission("Bastion.bypass")) return; //I'm not totally sure about the implications of this combined with humbug. It might cause some exceptions. Bukkit will catch.
+		Set<BastionBlock> blocking = this.getBlockingBastions(thrower.getLocation(), thrower);
 		
 		if(Bastion.getConfigManager().getEnderPearlRequireMaturity()){
 			Iterator<BastionBlock> i = blocking.iterator();
@@ -380,15 +423,11 @@ public class BastionBlockManager
 			};
 		}
 		
-		
 		if (blocking.size() > 0){
-			this.erodeFromTeleoprt(event.getTo(), event.getPlayer().getName(), blocking);
-			event.getPlayer().sendMessage(ChatColor.RED+"Ender pearl blocked by Bastion Block");
-			event.getPlayer().getInventory().addItem(new ItemStack(Material.ENDER_PEARL));
-			
+			this.erodeFromTeleoprt(thrower.getLocation(), thrower, blocking);
+			thrower.sendMessage(ChatColor.RED + "Ender pearl blocked by Bastion Block");
 			event.setCancelled(true);
-			return;
-		}	
+		}
 	}
 
 }

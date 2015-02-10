@@ -71,8 +71,8 @@ public class EnderPearlManager {
 		
 		
 		Player threw=null;
-		if(pearl.getShooter() instanceof Player){
-			threw=(Player) pearl.getShooter();
+		if(pearl.getShooter() instanceof Player) { //not sure why getShooter is showing up
+			threw = (Player) pearl.getShooter();
 		}
 
 		Set<BastionBlock> possible = bastions.getPossibleTeleportBlocking(pearl.getLocation(), maxDistance); //all the bastion blocks within range of the pearl
@@ -404,7 +404,7 @@ public class EnderPearlManager {
 	}
 	
 	private void handleTeleport(BastionBlock blocking ,Location loc, Player player){
-		if (!Bastion.getBastionManager().onCooldown(player.getName())) blocking.erode(blocking.erosionFromPearl());
+		if (!Bastion.getBastionManager().onCooldown(player)) blocking.erode(blocking.erosionFromPearl());
 		
 		player.sendMessage(ChatColor.RED+"Ender pearl blocked by Bastion Block");
 		player.getInventory().addItem(new ItemStack(Material.ENDER_PEARL));
