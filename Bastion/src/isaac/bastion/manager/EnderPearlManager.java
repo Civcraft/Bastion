@@ -26,12 +26,21 @@ import com.untamedears.humbug.CustomNMSEntityEnderPearl;
 
 public class EnderPearlManager {
 	public static final int MAX_TELEPORT=800;
+	private static boolean humbugLoaded;
 	private BastionBlockSet bastions;
 	
 	private FlightTask task;
 	
 	public EnderPearlManager(){
 		bastions=Bastion.getBastionManager().set;
+		humbugLoaded = true;
+		try {
+			Class.forName("com.untamedears.humbug.CustomNMSEntityEnderPearl");
+		}
+		catch (ClassNotFoundException e) {
+			humbugLoaded = false;
+			Bastion.getPlugin().getLogger().info("Humbug not found");
+		}
 
 		task = new FlightTask();
 	}
@@ -40,17 +49,11 @@ public class EnderPearlManager {
 	}
 	private void getBlocking(EnderPearl pearl){
 		double gravity=0.03F;
-		try {
-		if(pearl instanceof CustomNMSEntityEnderPearl)
-			gravity=((CustomNMSEntityEnderPearl)pearl).y_adjust_;
-		else
-			Bastion.getPlugin().getLogger().info("Humbug not found");
-		
-		} 
-		catch(NoClassDefFoundError e ){
-			Bastion.getPlugin().getLogger().info("Humbug not found");
+		if (humbugLoaded) {
+			if(pearl instanceof CustomNMSEntityEnderPearl) {
+				gravity=((CustomNMSEntityEnderPearl)pearl).y_adjust_;
+			}
 		}
-
 		Vector speed=pearl.getVelocity();
 		Vector twoDSpeed=speed.clone();
 		twoDSpeed.setY(0);
