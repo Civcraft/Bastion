@@ -10,14 +10,23 @@ BastionBlock:
   material: SPONGE
   effectRadius: 10
   startScaleFactor: 100
+# how much damage done to a bastion when it starts maturing.
   finalScaleFactor: 0.2
+# how much damage done to a bastion once it matures.
   warmUpTime: 86400000
+# warmUpTime is in milliseconds
   maxBreaksPerMinute: 30
+# how many blocks can be placed by a single player in a minute.
   erosionRatePerDay: 0
+# damage done to bastion per day
   destroyOnRemove: true
+# destroys the bastion block itself if broken by placed blocks if set to true.
   blocksToErode: 1
+# how many bastions break when a field is breached. set to 0 to destroy all overlapping bastions.
   EnderPearls:
     preventEnderPearl: true 
+  # prevent players not on the bastion group from throwing an enderpearl inside the bastion field.
     scaleFac: 1
     requireMaturity: true 
+  # requires the bastion to be mature before blocking thrown pearls.
   
