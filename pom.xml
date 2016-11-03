@@ -1,0 +1,81 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                      http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>isaac</groupId>
+  <artifactId>Bastion</artifactId>
+  <packaging>jar</packaging>
+  <version>2.0.2</version>
+  <name>Bastion</name>
+  <url>https://github.com/DevotedMC/Bastion</url>
+  
+  
+   <properties>
+      <maven.compiler.source>1.8</maven.compiler.source>
+      <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+  
+  <build>
+    
+    <resources>
+      <resource>
+        <directory>${basedir}/src/main/resources/</directory>
+        <includes>
+          <include>*.yml</include>
+        </includes>
+        <filtering>true</filtering>
+      </resource>
+      <resource>
+        <directory>${basedir}</directory>
+          <includes>
+            <include>License.txt</include>
+          </includes>
+      </resource>
+    </resources>
+  </build>
+
+  <dependencies>
+     <dependency>
+     	<groupId>org.spigotmc</groupId>
+        <artifactId>spigot</artifactId>
+        <version>1.10.2-R0.1-SNAPSHOT</version>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+    	<groupId>vg.civcraft.mc.namelayer</groupId>
+        <artifactId>NameLayer</artifactId>
+        <version>2.9.08</version>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+    	<groupId>vg.civcraft.mc.citadel</groupId>
+        <artifactId>Citadel</artifactId>
+        <version>3.7.02</version>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+    	<groupId>com.untamedears</groupId>
+        <artifactId>Humbug</artifactId>
+        <version>1.9.1</version>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+    	<groupId>vg.civcraft.mc.civmodcore</groupId>
+    	<artifactId>CivModCore</artifactId>
+    	<version>1.5.09</version>
+    	<scope>provided</scope>
+    </dependency>
+  </dependencies>
+  
+  <repositories>
+    <repository>
+    	<id>devoted-repo</id>
+    	<url>https://build.devotedmc.com/plugin/repository/everything/</url>
+    </repository>
+    <repository>
+        <id>spigot-repo</id>
+        <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+    </repository>
+  </repositories>
+</project>
