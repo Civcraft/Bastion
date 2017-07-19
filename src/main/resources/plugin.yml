@@ -1,7 +1,9 @@
 name: ${project.name}
 version: ${project.version}
 main: isaac.bastion.Bastion
-depend: [Citadel, NameLayer]
+author: spaceFountain
+authors: [Rourke750, ProgrammerDan, Maxopoly, TealNerd]
+depend: [CivModCore, Citadel, NameLayer]
 softdepend: [Humbug]
 commands:
    Bastion:
